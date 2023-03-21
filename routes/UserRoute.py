@@ -34,15 +34,8 @@ async def route_create_user(file: UploadFile,user: UserCreateModel = Depends(Use
         return result
 
     except Exception as error:
-        print(error)
-        if error.status_code == 400:
-            raise HTTPException(status_code=error.status_code,
-                                detail=error.detail)
-        detail = {
-            'detail': 'Erro interno no servidor'
-        }
-        raise HTTPException(status_code=500,
-                            detail=detail)
+        raise error
+
 
 @router.get(
     '/me',
@@ -60,6 +53,6 @@ async def search_for_logged_user_infos(Authorization: str = Header(default='')):
                                 detail=result['message'])
         del result['data']['password']
         return result
+
     except Exception as error:
-        raise HTTPException(status_code=error.status_code,
-                            detail=error.detail)
+        raise error
