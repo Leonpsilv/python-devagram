@@ -17,6 +17,6 @@ async def login(user: UserLoginModel = Body(...)):
     del result['data']['password']
 
     token = token_jwt_generate(result['data']['id'])
-    result['token'] = token
+    result['data']['token'] = token
 
     return result
