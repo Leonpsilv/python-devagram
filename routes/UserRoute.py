@@ -1,3 +1,5 @@
+import os
+from datetime import datetime
 
 from fastapi import APIRouter, Body, HTTPException, Depends, Header, UploadFile
 
@@ -17,10 +19,13 @@ router = APIRouter()
 @router.post("/", response_description="Rota para criar um novo Usuário.")
 async def route_create_user(file: UploadFile,user: UserCreateModel = Depends(UserCreateModel)):
     try:
-        file_location = 'files/'
+        photo_path = f'files/photo-{datetime.now().strftime("%H%M%S")}.png'
+        with open(photo_path, 'wb+') as archive:
+            archive.write(file.file.read())
 
+        result = await register_user(user, photo_path)
 
-        result = await register_user(user)
+        os.remove(photo_path)
 
         if not result['status'] == 201:
             raise HTTPException(status_code=result['status'],
@@ -29,6 +34,7 @@ async def route_create_user(file: UploadFile,user: UserCreateModel = Depends(Use
         return result
 
     except Exception as error:
+        print(error)
         if error.status_code == 400:
             raise HTTPException(status_code=error.status_code,
                                 detail=error.detail)

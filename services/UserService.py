@@ -1,4 +1,5 @@
 from models.UserModel import UserCreateModel
+from providers.AWSProvider import AWSProvider
 from repositories.UserRepository import (
     create_user,
     list_users,
@@ -8,8 +9,9 @@ from repositories.UserRepository import (
     delete_user
 )
 
+awsProvider = AWSProvider()
 
-async def register_user (user: UserCreateModel):
+async def register_user (user: UserCreateModel, photo_path):
     try:
         found_user = await search_user_by_email(user.email)
         if found_user:
@@ -20,6 +22,13 @@ async def register_user (user: UserCreateModel):
             }
         else:
             new_user = await create_user(user)
+            try:
+                url_photo = awsProvider.upload_file_s3(f'profile-photos/{new_user["id"]}.png', photo_path)
+
+                new_user = await edit_user(new_user["id"], {"photo" : url_photo})
+            except Exception as error:
+                print(error)
+
             return {
                 "message" : "Usuário cadastrado com sucesso!",
                 "data" : new_user,
