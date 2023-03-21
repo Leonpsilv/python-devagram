@@ -18,7 +18,7 @@ def user_helper(user):
         "name": user['name'],
         "email": user['email'],
         "password": user['password'],
-        "photo": user['photo']
+        "photo": user['photo'] if "photo" in user else "" #if ternário
     }
 
 
@@ -62,3 +62,10 @@ async def delete_user (id: str):
         return {"message" : "usuario deletado!"}
     else:
         return
+
+
+async def search_user_by_id(id: str) -> dict:
+    user = await user_collection.find_one({'_id': ObjectId(id)})
+
+    if user:
+        return user_helper(user)

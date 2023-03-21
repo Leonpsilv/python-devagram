@@ -27,11 +27,7 @@ def decode_token_jwt(token: str):
             return None
 
     except Exception as error:
-        return{
-            'message': 'Erro interno no servidor',
-            'data': '',
-            'status': 500
-        }
+        return
 
 
 

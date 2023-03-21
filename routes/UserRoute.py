@@ -1,17 +1,25 @@
 
-from fastapi import APIRouter, Body, HTTPException
+from fastapi import APIRouter, Body, HTTPException, Depends, Header, UploadFile
 
+from middlewares.JWTMiddleware import token_verify
 from models.UserModel import UserCreateModel
+from services.AuthService import (
+    decode_token_jwt
+)
 from services.UserService import (
-    register_user
+    register_user,
+    search_user
 )
 
 router = APIRouter()
 
 
 @router.post("/", response_description="Rota para criar um novo Usuário.")
-async def route_create_user(user: UserCreateModel = Body(...)):
+async def route_create_user(file: UploadFile,user: UserCreateModel = Depends(UserCreateModel)):
     try:
+        file_location = 'files/'
+
+
         result = await register_user(user)
 
         if not result['status'] == 201:
@@ -22,8 +30,30 @@ async def route_create_user(user: UserCreateModel = Body(...)):
 
     except Exception as error:
         if error.status_code == 400:
-            return error
-
-        return {
-            'message': 'Erro interno no servidor'
+            raise HTTPException(status_code=error.status_code,
+                                detail=error.detail)
+        detail = {
+            'detail': 'Erro interno no servidor'
         }
+        raise HTTPException(status_code=500,
+                            detail=detail)
+
+@router.get(
+    '/me',
+    response_description="Rota para buscar as informações do usuário logado.",
+    dependencies=[Depends(token_verify)]
+)
+async def search_for_logged_user_infos(Authorization: str = Header(default='')):
+    try:
+        token = Authorization.split(' ')[1]
+        payload = decode_token_jwt(token)
+        result = await search_user(payload['user_id'])
+
+        if not result['status'] == 200:
+            raise HTTPException(status_code=result['status'],
+                                detail=result['message'])
+        del result['data']['password']
+        return result
+    except Exception as error:
+        raise HTTPException(status_code=error.status_code,
+                            detail=error.detail)
