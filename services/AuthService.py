@@ -12,7 +12,7 @@ userRepository = UserRepository()
 def token_jwt_generate(user_id: str) -> str:
     payload = {
         "user_id": user_id,
-        "expires": time.time() + 600
+        "expires": time.time() + 6000
     }
     token = jwt.encode(payload, JWT_SECRET, algorithm="HS256")
     return token
