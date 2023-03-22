@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 
 from models.UserModel import UserCreateModel, UserUpdateModel
@@ -7,7 +8,9 @@ from repositories.UserRepository import UserRepository
 awsProvider = AWSProvider()
 
 userRepository = UserRepository()
-class UserService():
+
+
+class UserService:
     async def register_user(self, user: UserCreateModel, photo_path):
         try:
             found_user = await userRepository.search_user_by_email(user.email)
@@ -23,6 +26,7 @@ class UserService():
                     url_photo = awsProvider.upload_file_s3(f'profile-photos/{new_user["id"]}.png', photo_path)
 
                     new_updated_user = await userRepository.edit_user(new_user["id"], {"photo": url_photo})
+                    os.remove(photo_path)
                 except Exception as error:
                     print(error)
 
