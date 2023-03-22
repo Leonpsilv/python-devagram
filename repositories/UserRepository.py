@@ -46,12 +46,11 @@ async def edit_user(id: str, user_data: dict):
     user = await user_collection.find_one({ "_id" : ObjectId(id) })
 
     if user:
-        edited_user = await user_collection.update_one(
+        await user_collection.update_one(
             {"_id" : ObjectId(id)}, {"$set" : user_data}
         )
+        edited_user = await user_collection.find_one({"_id": ObjectId(id)})
         return user_helper(edited_user)
-    else:
-        return
 
 
 async def delete_user (id: str):
