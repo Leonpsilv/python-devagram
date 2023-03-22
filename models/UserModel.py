@@ -1,4 +1,4 @@
-from fastapi import Form
+from fastapi import Form, UploadFile
 from pydantic import BaseModel, Field, EmailStr
 
 
@@ -54,5 +54,21 @@ class UserLoginModel(BaseModel):
             "user": {
                 "email": "jose@email.com",
                 "password": "senha123!",
+            }
+        }
+
+@form_body
+class UserUpdateModel(BaseModel):
+    name: str = Field(...)
+    email: EmailStr = Field(...)
+    password: str = Field(...)
+    photo: UploadFile = Field(...)
+
+    class Config:
+        schema_extra={
+            "user": {
+                "name": "Jose",
+                "email": "jose@email.com",
+                "password": "senha123!"
             }
         }
