@@ -1,13 +1,17 @@
 import os
 from datetime import datetime
 
+from bson import ObjectId
+
 from models.UserModel import UserCreateModel, UserUpdateModel
 from providers.AWSProvider import AWSProvider
 from repositories.UserRepository import UserRepository
+from repositories.PostRepository import PostRepository
 
 awsProvider = AWSProvider()
 
 userRepository = UserRepository()
+postRepository = PostRepository()
 
 
 class UserService:
@@ -45,9 +49,16 @@ class UserService:
     async def search_user(self, id: str):
         try:
             found_user = await userRepository.search_user_by_id(id)
+            found_posts = await postRepository.list_user_posts(id)
+
+            found_user["total_following"] = len(found_user["following"])
+            found_user["total_followers"] = len(found_user["followers"])
+            found_user["all_posts"] = found_posts
+            found_user["total_posts"] = len(found_posts)
+
             if found_user:
                 return {
-                    "message" : "Login realizado com sucesso",
+                    "message" : "Usuário encontrado com sucesso",
                     "data" : found_user,
                     "status": 200
                 }
@@ -59,6 +70,28 @@ class UserService:
                 }
 
         except Exception as error:
+            return {
+                "message" : "Erro interno no servidor",
+                "data" : str(error),
+                "status" : 500
+            }
+
+    async def search_all_users(self, name):
+        try:
+            found_users = await userRepository.list_users(name)
+
+            for user in found_users:
+                user["total_following"] = len(user["following"])
+                user["total_followers"] = len(user["followers"])
+
+            return {
+                "message" : "Usuários listados com sucesso.",
+                "data" : found_users,
+                "status": 200
+            }
+
+        except Exception as error:
+            print(error)
             return {
                 "message" : "Erro interno no servidor",
                 "data" : str(error),
@@ -103,4 +136,38 @@ class UserService:
                 "message" : "Erro interno no servidor",
                 "data" : str(error),
                 "status" : 500
+            }
+
+    async def follow_or_unfollow_user(self, user_id, followed_user_id):
+        try:
+            found_followed_user = await userRepository.search_user_by_id(followed_user_id)
+            found_following_user = await userRepository.search_user_by_id(user_id)
+
+            if not found_followed_user or not found_following_user:
+                return {
+                "message": "Usuário não encontrado",
+                "data": "",
+                "status": 404
+            }
+
+            if found_followed_user['followers'].count(user_id) > 0:
+                found_followed_user['followers'].remove(user_id)
+                found_following_user['following'].remove(followed_user_id)
+            else:
+                found_followed_user['followers'].append(ObjectId(user_id))
+                found_following_user['following'].append(ObjectId(followed_user_id))
+
+            await userRepository.edit_user(followed_user_id, {"followers": found_followed_user['followers']})
+            await userRepository.edit_user(user_id, {"following": found_following_user['following']})
+
+            return {
+                "message": "Requisição realizada com sucesso",
+                "data": "",
+                "status": 200
+            }
+        except Exception as error:
+            return {
+                "message": "Erro interno no servidor",
+                "data": str(error),
+                "status": 500
             }

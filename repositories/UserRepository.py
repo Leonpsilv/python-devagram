@@ -17,12 +17,37 @@ converterUtil = ConverterUtil()
 class UserRepository:
     async def create_user(self, user: UserCreateModel) -> dict:
         user.password = generate_encrypted_password(user.password)
-        created_user = await user_collection.insert_one(user.__dict__)
+
+        user_dict = {
+            "name": user.name,
+            "email": user.email,
+            "password": user.password,
+            "followers": [],
+            "following": []
+        }
+
+        created_user = await user_collection.insert_one(user_dict)
+
         new_user = await user_collection.find_one({"_id": created_user.inserted_id})
+
         return converterUtil.user_converter(new_user)
 
-    async def list_users(self) -> dict:
-        return await user_collection.find()
+    async def list_users(self, name) -> dict:
+        founded_users = user_collection.find({
+            "name": {
+                "$regex": name,
+                '$options': 'i' # case insensitive
+            }
+        })
+        users = []
+
+        async for user in founded_users:
+            user_data = converterUtil.user_converter(user)
+            del user_data['password']
+
+            users.append(user_data)
+
+        return users
 
     async def search_user_by_email(self, email: str) -> dict:
         user = await user_collection.find_one({"email": email})

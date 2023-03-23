@@ -8,3 +8,7 @@ class CommentModel(BaseModel):
 
 class CreateCommentModel(BaseModel):
     comment: str = Field(...)
+
+
+class EditCommentModel(BaseModel):
+    comment: str = Field(...)
