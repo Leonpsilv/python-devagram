@@ -25,14 +25,13 @@ class PostRepository:
             await post_collection.update_one({"_id" : ObjectId(id)}, {"$set": post_data})
             updated_post = await post_collection.find_one({"_id": ObjectId(id)})
 
-
             return converterUtil.post_converter(updated_post)
 
     async def create_post(self, post: CreatePostModel, user_id) -> dict:
         post_dict = {
             'user_id': ObjectId(user_id),
             'subtitle': post.subtitle,
-            'likes': 0,
+            'likes': [],
             'comments': [],
             'date': datetime.now()
         }
@@ -57,10 +56,8 @@ class PostRepository:
 
         return posts
 
-
     async def search_post_by_id(self, id: str) -> dict:
-        post = await post_collection.find_one({'_id': ObjectId(id)})
-
+        post = await post_collection.find_one({"_id": ObjectId(id)})
         if post:
             return converterUtil.post_converter(post)
 

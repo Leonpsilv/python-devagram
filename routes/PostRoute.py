@@ -48,3 +48,23 @@ async def route_create_post():
         return result
     except Exception as error:
         raise error
+
+
+@router.put(
+    "/{post_id}",
+    response_description="Rota para curtir/descurtir uma postagem.",
+    dependencies=[Depends(token_verify)]
+)
+async def like_unlike_post(post_id: str, Authorization: str = Header(default='')):
+    try:
+        token = Authorization.split(' ')[1]
+        payload = decode_token_jwt(token)
+        result_user = await (userService.search_user(payload["user_id"]))
+        logged_user = result_user['data']
+
+        result = await postService.like_or_unlike_post(post_id, logged_user['id'])
+        if not result['status'] == 200:
+            raise HTTPException(status_code=result['status'], detail=result['message'])
+        return result
+    except Exception as error:
+        raise error

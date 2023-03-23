@@ -1,6 +1,8 @@
 import os
 from datetime import datetime
 
+from bson import ObjectId
+
 from models.PostModel import CreatePostModel
 from providers.AWSProvider import AWSProvider
 from repositories.PostRepository import PostRepository
@@ -50,6 +52,27 @@ class PostService:
             }
         except Exception as error:
             print(error)
+            return {
+                "message": "Erro interno no servidor",
+                "data": str(error),
+                "status": 500
+            }
+
+    async def like_or_unlike_post(self, post_id, user_id):
+        try:
+            found_post = await postRepository.search_post_by_id(post_id)
+            if found_post['likes'].count(user_id) > 0:
+                found_post['likes'].remove(user_id)
+            else:
+                found_post['likes'].append(ObjectId(user_id))
+
+            updated_post = await postRepository.update_post(post_id, {"likes": found_post['likes']})
+            return {
+                "message": "Postagem curtida com sucesso",
+                "data": updated_post,
+                "status": 200
+            }
+        except Exception as error:
             return {
                 "message": "Erro interno no servidor",
                 "data": str(error),
