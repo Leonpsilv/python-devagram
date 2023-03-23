@@ -1,8 +1,7 @@
-import os
-from datetime import datetime
-from fastapi import APIRouter, HTTPException, Depends, Header, UploadFile
+from fastapi import APIRouter, HTTPException, Depends, Header, Body
 
 from middlewares.JWTMiddleware import token_verify
+from models.CommentModel import CreateCommentModel
 from models.PostModel import CreatePostModel
 from services.AuthService import decode_token_jwt
 from services.UserService import UserService
@@ -51,11 +50,14 @@ async def route_create_post():
 
 
 @router.put(
-    "/{post_id}",
+    "/like/{post_id}",
     response_description="Rota para curtir/descurtir uma postagem.",
     dependencies=[Depends(token_verify)]
 )
-async def like_unlike_post(post_id: str, Authorization: str = Header(default='')):
+async def like_unlike_post(
+        post_id: str,
+        Authorization: str = Header(default='')
+):
     try:
         token = Authorization.split(' ')[1]
         payload = decode_token_jwt(token)
@@ -68,3 +70,29 @@ async def like_unlike_post(post_id: str, Authorization: str = Header(default='')
         return result
     except Exception as error:
         raise error
+
+
+@router.put(
+    "/comentar/{post_id}",
+    response_description="Rota para comentar em uma postagem.",
+    dependencies=[Depends(token_verify)]
+)
+async def comment_a_post(
+        post_id: str,
+        Authorization: str = Header(default=''),
+        comment_model: CreateCommentModel = Body(...)
+):
+    try:
+        token = Authorization.split(' ')[1]
+        payload = decode_token_jwt(token)
+        result_user = await (userService.search_user(payload["user_id"]))
+        logged_user = result_user['data']
+
+        result = await postService.comment_post(post_id, logged_user['id'], comment_model.comment)
+
+        if not result['status'] == 200:
+            raise HTTPException(status_code=result['status'], detail=result['message'])
+        return result
+    except Exception as error:
+        raise error
+

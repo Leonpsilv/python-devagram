@@ -44,6 +44,8 @@ class PostService:
     async def list_all_posts(self):
         try:
             posts = await postRepository.list_posts()
+            for p in posts:
+                p['total_likes'] = len(p['likes'])
 
             return {
                 "message": "Postagens listadas com sucesso",
@@ -69,6 +71,27 @@ class PostService:
             updated_post = await postRepository.update_post(post_id, {"likes": found_post['likes']})
             return {
                 "message": "Postagem curtida com sucesso",
+                "data": updated_post,
+                "status": 200
+            }
+        except Exception as error:
+            return {
+                "message": "Erro interno no servidor",
+                "data": str(error),
+                "status": 500
+            }
+
+    async def comment_post(self, post_id, user_id, comment):
+        try:
+            found_post = await postRepository.search_post_by_id(post_id)
+            found_post['comments'].append({
+                "user_id": user_id,
+                "comment": comment
+            })
+
+            updated_post = await postRepository.update_post(post_id, {"comments": found_post['comments']})
+            return {
+                "message": "Postagem comentada com sucesso",
                 "data": updated_post,
                 "status": 200
             }
