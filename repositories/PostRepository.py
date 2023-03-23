@@ -56,6 +56,28 @@ class PostRepository:
 
         return posts
 
+    async def list_user_posts(self, user_id) -> dict:
+        founded_posts = post_collection.aggregate([
+            {
+              "$match": {
+                  "user_id": ObjectId(user_id)
+              }
+            },
+            {
+                "$lookup": {
+                    "from": "user",
+                    "localField": "user_id",
+                    "foreignField": "_id",
+                    "as": "user"
+                }
+            }
+        ])
+        posts = []
+        async for post in founded_posts:
+            posts.append(converterUtil.post_converter(post))
+
+        return posts
+
     async def search_post_by_id(self, id: str) -> dict:
         post = await post_collection.find_one({"_id": ObjectId(id)})
         if post:

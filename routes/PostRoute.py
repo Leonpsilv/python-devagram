@@ -38,9 +38,25 @@ async def route_create_post(Authorization: str = Header(default=''), post: Creat
     response_description="Rota para listar postagens.",
     dependencies=[Depends(token_verify)]
 )
-async def route_create_post():
+async def list_all_posts():
     try:
         result = await postService.list_all_posts()
+
+        if not result['status'] == 200:
+            raise HTTPException(status_code=result['status'], detail=result['message'])
+        return result
+    except Exception as error:
+        raise error
+
+
+@router.get(
+    "/{user_id}",
+    response_description="Rota para listar as postagens de um usuário específico.",
+    dependencies=[Depends(token_verify)]
+)
+async def list_all_user_posts(user_id: str):
+    try:
+        result = await postService.list_all_user_posts(user_id)
 
         if not result['status'] == 200:
             raise HTTPException(status_code=result['status'], detail=result['message'])

@@ -46,9 +46,30 @@ class PostService:
             posts = await postRepository.list_posts()
             for p in posts:
                 p['total_likes'] = len(p['likes'])
+                p['total_comments'] = len(p['comments'])
 
             return {
                 "message": "Postagens listadas com sucesso",
+                "data": posts,
+                "status": 200
+            }
+        except Exception as error:
+            print(error)
+            return {
+                "message": "Erro interno no servidor",
+                "data": str(error),
+                "status": 500
+            }
+
+    async def list_all_user_posts(self, user_id):
+        try:
+            posts = await postRepository.list_user_posts(user_id)
+            for p in posts:
+                p['total_likes'] = len(p['likes'])
+                p['total_comments'] = len(p['comments'])
+
+            return {
+                "message": "Postagens do usuário listadas com sucesso",
                 "data": posts,
                 "status": 200
             }
