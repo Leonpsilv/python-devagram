@@ -3,13 +3,14 @@ from fastapi import APIRouter, HTTPException, Depends, Header, Body
 from middlewares.JWTMiddleware import token_verify
 from models.CommentModel import CreateCommentModel, EditCommentModel
 from models.PostModel import CreatePostModel
-from services.AuthService import decode_token_jwt
+from services.AuthService import AuthService
 from services.UserService import UserService
 from services.PostService import PostService
 
 router = APIRouter()
 userService = UserService()
 postService = PostService()
+authService = AuthService()
 
 
 @router.post(
@@ -23,14 +24,14 @@ async def route_create_post(
 ):
     try:
         token = Authorization.split(' ')[1]
-        payload = decode_token_jwt(token)
+        payload = authService.decode_token_jwt(token)
         result_user = await (userService.search_user(payload["user_id"]))
         logged_user = result_user['data']
 
         result = await postService.register_post(post, logged_user['id'])
 
-        if not result['status'] == 201:
-            raise HTTPException(status_code=result['status'], detail=result['detail'])
+        if not result.status == 200:
+            raise HTTPException(status_code=result.status, detail=result.message)
         return result
     except Exception as error:
         raise error
@@ -45,8 +46,8 @@ async def list_all_posts():
     try:
         result = await postService.list_all_posts()
 
-        if not result['status'] == 200:
-            raise HTTPException(status_code=result['status'], detail=result['message'])
+        if not result.status == 200:
+            raise HTTPException(status_code=result.status, detail=result.message)
         return result
     except Exception as error:
         raise error
@@ -61,8 +62,8 @@ async def list_all_user_posts(user_id: str):
     try:
         result = await postService.list_all_user_posts(user_id)
 
-        if not result['status'] == 200:
-            raise HTTPException(status_code=result['status'], detail=result['message'])
+        if not result.status == 200:
+            raise HTTPException(status_code=result.status, detail=result.message)
         return result
     except Exception as error:
         raise error
@@ -79,13 +80,14 @@ async def like_unlike_post(
 ):
     try:
         token = Authorization.split(' ')[1]
-        payload = decode_token_jwt(token)
+        payload = authService.decode_token_jwt(token)
         result_user = await (userService.search_user(payload["user_id"]))
         logged_user = result_user['data']
 
         result = await postService.like_or_unlike_post(post_id, logged_user['id'])
-        if not result['status'] == 200:
-            raise HTTPException(status_code=result['status'], detail=result['message'])
+
+        if not result.status == 200:
+            raise HTTPException(status_code=result.status, detail=result.message)
         return result
     except Exception as error:
         raise error
@@ -103,14 +105,14 @@ async def comment_a_post(
 ):
     try:
         token = Authorization.split(' ')[1]
-        payload = decode_token_jwt(token)
+        payload = authService.decode_token_jwt(token)
         result_user = await (userService.search_user(payload["user_id"]))
         logged_user = result_user['data']
 
         result = await postService.comment_post(post_id, logged_user['id'], comment_model.comment)
 
-        if not result['status'] == 200:
-            raise HTTPException(status_code=result['status'], detail=result['message'])
+        if not result.status == 200:
+            raise HTTPException(status_code=result.status, detail=result.message)
         return result
     except Exception as error:
         raise error
@@ -128,14 +130,14 @@ async def delete_post_comment(
 ):
     try:
         token = Authorization.split(' ')[1]
-        payload = decode_token_jwt(token)
+        payload = authService.decode_token_jwt(token)
         result_user = await (userService.search_user(payload["user_id"]))
         logged_user = result_user['data']
 
         result = await postService.delete_comment_post(post_id, logged_user['id'], comment_id)
 
-        if not result['status'] == 200:
-            raise HTTPException(status_code=result['status'], detail=result['message'])
+        if not result.status == 200:
+            raise HTTPException(status_code=result.status, detail=result.message)
         return result
     except Exception as error:
         raise error
@@ -154,14 +156,14 @@ async def edit_post_comment(
 ):
     try:
         token = Authorization.split(' ')[1]
-        payload = decode_token_jwt(token)
+        payload = authService.decode_token_jwt(token)
         result_user = await (userService.search_user(payload["user_id"]))
         logged_user = result_user['data']
 
         result = await postService.edit_comment_post(post_id, logged_user['id'], comment_id, edited_comment.comment)
 
-        if not result['status'] == 200:
-            raise HTTPException(status_code=result['status'], detail=result['message'])
+        if not result.status == 200:
+            raise HTTPException(status_code=result.status, detail=result.message)
         return result
     except Exception as error:
         raise error
@@ -178,14 +180,14 @@ async def delete_a_post(
 ):
     try:
         token = Authorization.split(' ')[1]
-        payload = decode_token_jwt(token)
+        payload = authService.decode_token_jwt(token)
         result_user = await (userService.search_user(payload["user_id"]))
         logged_user = result_user['data']
 
         result = await postService.delete_post(post_id, logged_user['id'])
 
-        if not result['status'] == 200:
-            raise HTTPException(status_code=result['status'], detail=result['message'])
+        if not result.status == 200:
+            raise HTTPException(status_code=result.status, detail=result.message)
         return result
     except Exception as error:
         raise error

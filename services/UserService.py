@@ -3,6 +3,7 @@ from datetime import datetime
 
 from bson import ObjectId
 
+from dtos.ResponseDTO import ResponseDTO
 from models.UserModel import UserCreateModel, UserUpdateModel
 from providers.AWSProvider import AWSProvider
 from repositories.UserRepository import UserRepository
@@ -19,11 +20,7 @@ class UserService:
         try:
             found_user = await userRepository.search_user_by_email(user.email)
             if found_user:
-                return {
-                    "message": "Este email já está cadastrado!",
-                    "data": "",
-                    "status": 400
-                }
+                return ResponseDTO("Este email já está cadastrado!", "", 400)
             else:
                 new_user = await userRepository.create_user(user)
                 try:
@@ -34,17 +31,9 @@ class UserService:
                 except Exception as error:
                     print(error)
 
-                return {
-                    "message": "Usuário cadastrado com sucesso!",
-                    "data": new_updated_user,
-                    "status": 201
-                }
+                return ResponseDTO("Usuário cadastrado com sucesso!", new_updated_user, 201)
         except Exception as error:
-            return {
-                "message": "Erro interno no servidor",
-                "data": str(error),
-                "status": 500
-            }
+            return ResponseDTO("Erro interno no servidor", str(error), 500)
 
     async def search_user(self, id: str):
         try:
@@ -57,24 +46,12 @@ class UserService:
             found_user["total_posts"] = len(found_posts)
 
             if found_user:
-                return {
-                    "message" : "Usuário encontrado com sucesso",
-                    "data" : found_user,
-                    "status": 200
-                }
+                return ResponseDTO("Usuário encontrado com sucesso", found_user, 200)
             else:
-                return {
-                    "message" : "Usuário (com esse id) não encontrado",
-                    "data" : "",
-                    "status": 404
-                }
+                return ResponseDTO("Usuário (com esse id) não encontrado", "", 404)
 
         except Exception as error:
-            return {
-                "message" : "Erro interno no servidor",
-                "data" : str(error),
-                "status" : 500
-            }
+            return ResponseDTO("Erro interno no servidor", str(error), 500)
 
     async def search_all_users(self, name):
         try:
@@ -84,19 +61,10 @@ class UserService:
                 user["total_following"] = len(user["following"])
                 user["total_followers"] = len(user["followers"])
 
-            return {
-                "message" : "Usuários listados com sucesso.",
-                "data" : found_users,
-                "status": 200
-            }
+            return ResponseDTO("Usuários listados com sucesso.", found_users, 200)
 
         except Exception as error:
-            print(error)
-            return {
-                "message" : "Erro interno no servidor",
-                "data" : str(error),
-                "status" : 500
-            }
+            return ResponseDTO("Erro interno no servidor", str(error), 500)
 
     async def update_logged_user(self, id, update_user: UserUpdateModel):
         try:
@@ -119,24 +87,13 @@ class UserService:
 
                 user_dict['photo'] = url_photo if url_photo is not None else user_dict['photo']
                 updated_user = await userRepository.edit_user(id, user_dict)
-                return {
-                    "message": "Usuário atualizado com sucesso!",
-                    "data": updated_user,
-                    "status": 200
-                }
+                return ResponseDTO("Usuário atualizado com sucesso!", updated_user, 200)
+
             else:
-                return {
-                    "message" : "Usuário (com esse id) não encontrado",
-                    "data" : "",
-                    "status": 404
-                }
+                return ResponseDTO("Usuário (com esse id) não encontrado", "", 404)
 
         except Exception as error:
-            return {
-                "message" : "Erro interno no servidor",
-                "data" : str(error),
-                "status" : 500
-            }
+            return ResponseDTO("Erro interno no servidor", str(error), 500)
 
     async def follow_or_unfollow_user(self, user_id, followed_user_id):
         try:
@@ -144,11 +101,7 @@ class UserService:
             found_following_user = await userRepository.search_user_by_id(user_id)
 
             if not found_followed_user or not found_following_user:
-                return {
-                "message": "Usuário não encontrado",
-                "data": "",
-                "status": 404
-            }
+                return ResponseDTO("Usuário não encontrado", "", 404)
 
             if found_followed_user['followers'].count(user_id) > 0:
                 found_followed_user['followers'].remove(user_id)
@@ -160,14 +113,7 @@ class UserService:
             await userRepository.edit_user(followed_user_id, {"followers": found_followed_user['followers']})
             await userRepository.edit_user(user_id, {"following": found_following_user['following']})
 
-            return {
-                "message": "Requisição realizada com sucesso",
-                "data": "",
-                "status": 200
-            }
+            return ResponseDTO("Requisição realizada com sucesso", "", 200)
+
         except Exception as error:
-            return {
-                "message": "Erro interno no servidor",
-                "data": str(error),
-                "status": 500
-            }
+            return ResponseDTO("Erro interno no servidor", str(error), 500)
