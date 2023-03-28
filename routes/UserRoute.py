@@ -38,13 +38,13 @@ async def route_create_user(file: UploadFile,user: UserCreateModel = Depends(Use
 )
 async def search_for_logged_user_infos(authorization: str = Header(default='')):
     try:
-        token = authorization.split(' ')[1]
-        payload = authService.decode_token_jwt(token)
-        result = await userService.search_user(payload['user_id'])
+        logged_user = await authService.get_logged_user(authorization)
+
+        result = await userService.search_user(logged_user.id)
 
         if not result.status == 200:
             raise HTTPException(status_code=result.status, detail=result.message)
-        del result.data['password']
+        del result.data.password
         return result
 
     except Exception as error:
@@ -98,9 +98,8 @@ async def update_logged_user_infos(
         user_update: UserUpdateModel = Depends(UserUpdateModel)
 ):
     try:
-        token = authorization.split(' ')[1]
-        payload = authService.decode_token_jwt(token)
-        result = await userService.update_logged_user(payload['user_id'], user_update)
+        logged_user = await authService.get_logged_user(authorization)
+        result = await userService.update_logged_user(logged_user.id, user_update)
 
         if not result.status == 200:
             raise HTTPException(status_code=result.status, detail=result.message)
@@ -120,12 +119,9 @@ async def follow_unfollow_user(
         authorization: str = Header(default='')
 ):
     try:
-        token = authorization.split(' ')[1]
-        payload = authService.decode_token_jwt(token)
-        result_user = await (userService.search_user(payload["user_id"]))
-        logged_user = result_user['data']
+        logged_user = await authService.get_logged_user(authorization)
 
-        result = await userService.follow_or_unfollow_user(logged_user['id'], followed_user_id)
+        result = await userService.follow_or_unfollow_user(logged_user.id, followed_user_id)
         if not result.status == 200:
             raise HTTPException(status_code=result.status, detail=result.message)
         return result

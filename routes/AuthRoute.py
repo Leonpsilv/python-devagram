@@ -15,9 +15,9 @@ async def login(user: UserLoginModel = Body(...)):
         raise HTTPException(status_code=result.status,
                             detail=result.message)
 
-    del result.data['password']
+    del result.data.password
 
-    token = authService.token_jwt_generate(result.data['id'])
-    result.data['token'] = token
+    token = authService.token_jwt_generate(result.data.id)
+    result.data.token = token
 
     return result

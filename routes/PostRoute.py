@@ -23,11 +23,11 @@ async def route_create_post(
         post: CreatePostModel = Depends(CreatePostModel)
 ):
     try:
-        logged_user = authService.get_logged_user(authorization)
+        logged_user = await authService.get_logged_user(authorization)
 
-        result = await postService.register_post(post, logged_user['id'])
+        result = await postService.register_post(post, logged_user.id)
 
-        if not result.status == 200:
+        if not result.status == 201:
             raise HTTPException(status_code=result.status, detail=result.message)
         return result
     except Exception as error:
@@ -76,9 +76,9 @@ async def like_unlike_post(
         authorization: str = Header(default='')
 ):
     try:
-        logged_user = authService.get_logged_user(authorization)
+        logged_user = await authService.get_logged_user(authorization)
 
-        result = await postService.like_or_unlike_post(post_id, logged_user['id'])
+        result = await postService.like_or_unlike_post(post_id, logged_user.id)
 
         if not result.status == 200:
             raise HTTPException(status_code=result.status, detail=result.message)
@@ -98,9 +98,9 @@ async def comment_a_post(
         comment_model: CreateCommentModel = Body(...)
 ):
     try:
-        logged_user = authService.get_logged_user(authorization)
+        logged_user = await authService.get_logged_user(authorization)
 
-        result = await postService.comment_post(post_id, logged_user['id'], comment_model.comment)
+        result = await postService.comment_post(post_id, logged_user.id, comment_model.comment)
 
         if not result.status == 200:
             raise HTTPException(status_code=result.status, detail=result.message)
@@ -120,9 +120,9 @@ async def delete_post_comment(
         authorization: str = Header(default=''),
 ):
     try:
-        logged_user = authService.get_logged_user(authorization)
+        logged_user = await authService.get_logged_user(authorization)
 
-        result = await postService.delete_comment_post(post_id, logged_user['id'], comment_id)
+        result = await postService.delete_comment_post(post_id, logged_user.id, comment_id)
 
         if not result.status == 200:
             raise HTTPException(status_code=result.status, detail=result.message)
@@ -143,9 +143,9 @@ async def edit_post_comment(
         edited_comment: EditCommentModel = Body(...)
 ):
     try:
-        logged_user = authService.get_logged_user(authorization)
+        logged_user = await authService.get_logged_user(authorization)
 
-        result = await postService.edit_comment_post(post_id, logged_user['id'], comment_id, edited_comment.comment)
+        result = await postService.edit_comment_post(post_id, logged_user.id, comment_id, edited_comment.comment)
 
         if not result.status == 200:
             raise HTTPException(status_code=result.status, detail=result.message)
@@ -164,9 +164,9 @@ async def delete_a_post(
         authorization: str = Header(default='')
 ):
     try:
-        logged_user = authService.get_logged_user(authorization)
+        logged_user = await authService.get_logged_user(authorization)
 
-        result = await postService.delete_post(post_id, logged_user['id'])
+        result = await postService.delete_post(post_id, logged_user.id)
 
         if not result.status == 200:
             raise HTTPException(status_code=result.status, detail=result.message)

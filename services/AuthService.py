@@ -3,7 +3,7 @@ from decouple import config
 import time
 
 from dtos.ResponseDTO import ResponseDTO
-from models.UserModel import UserLoginModel
+from models.UserModel import UserLoginModel, UserModel
 from repositories.UserRepository import UserRepository
 from utils.AuthUtil import AuthUtil
 from services.UserService import UserService
@@ -15,7 +15,7 @@ userService = UserService()
 
 
 class AuthService:
-    async def get_logged_user(self, authorization: str):
+    async def get_logged_user(self, authorization: str) -> UserModel:
         token = authorization.split(' ')[1]
         payload = self.decode_token_jwt(token)
         result_user = await (userService.search_user(payload["user_id"]))
@@ -48,7 +48,7 @@ class AuthService:
             return ResponseDTO('Email ou senha incorretos.', "", 401)
 
         else:
-            if authUtil.verify_password(user.password, found_user['password']):
+            if authUtil.verify_password(user.password, found_user.password):
                 return ResponseDTO('Login realizado com sucesso!', found_user, 200)
 
             else:

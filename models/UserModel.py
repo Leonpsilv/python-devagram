@@ -6,6 +6,7 @@ from utils.DecoratorUtil import DecoratorUtil
 
 decoratorUtil = DecoratorUtil()
 
+
 class UserModel(BaseModel):
     id: str = Field(...)
     name: str = Field(...)
@@ -14,6 +15,14 @@ class UserModel(BaseModel):
     photo: str = Field(...)
     followers: List
     following: List
+    total_followers: int
+    total_following: int
+    all_posts: List
+    total_posts: int
+    token: str
+
+    def __getitem__(self, item):
+        return getattr(self, item)
 
     class Config:
         schema_extra={

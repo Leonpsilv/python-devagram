@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from fastapi import UploadFile
 from pydantic import BaseModel, Field
@@ -11,12 +11,18 @@ decoratorUtil = DecoratorUtil()
 
 class PostModel(BaseModel):
     id: str = Field(...)
-    user: UserModel = Field(...)
+    user_id: str = Field(...)
     photo: str = Field(...)
     subtitle: str = Field(...)
-    date: str = Field(...)
-    likes: str = Field(...)
-    comments: List = Field(...)
+    date: str
+    likes: List
+    comments: List
+    user: Optional[UserModel]
+    total_likes: int
+    total_comments: int
+
+    def __getitem__(self, item):
+        return getattr(self, item)
 
     class Config:
         schema_extra={

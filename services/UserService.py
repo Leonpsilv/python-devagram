@@ -24,9 +24,9 @@ class UserService:
             else:
                 new_user = await userRepository.create_user(user)
                 try:
-                    url_photo = awsProvider.upload_file_s3(f'profile-photos/{new_user["id"]}.png', photo_path)
+                    url_photo = awsProvider.upload_file_s3(f'profile-photos/{new_user.id}.png', photo_path)
 
-                    new_updated_user = await userRepository.edit_user(new_user["id"], {"photo": url_photo})
+                    new_updated_user = await userRepository.edit_user(new_user.id, {"photo": url_photo})
                     os.remove(photo_path)
                 except Exception as error:
                     print(error)
@@ -38,14 +38,15 @@ class UserService:
     async def search_user(self, id: str):
         try:
             found_user = await userRepository.search_user_by_id(id)
-            found_posts = await postRepository.list_user_posts(id)
-
-            found_user["total_following"] = len(found_user["following"])
-            found_user["total_followers"] = len(found_user["followers"])
-            found_user["all_posts"] = found_posts
-            found_user["total_posts"] = len(found_posts)
 
             if found_user:
+                found_posts = await postRepository.list_user_posts(id)
+
+                found_user.total_following = len(found_user.following)
+                found_user.total_followers = len(found_user.followers)
+                found_user.all_posts = found_posts
+                found_user.total_posts = len(found_posts)
+
                 return ResponseDTO("Usuário encontrado com sucesso", found_user, 200)
             else:
                 return ResponseDTO("Usuário (com esse id) não encontrado", "", 404)
@@ -58,8 +59,8 @@ class UserService:
             found_users = await userRepository.list_users(name)
 
             for user in found_users:
-                user["total_following"] = len(user["following"])
-                user["total_followers"] = len(user["followers"])
+                user.total_following = len(user.following)
+                user.total_followers = len(user.followers)
 
             return ResponseDTO("Usuários listados com sucesso.", found_users, 200)
 
@@ -103,15 +104,15 @@ class UserService:
             if not found_followed_user or not found_following_user:
                 return ResponseDTO("Usuário não encontrado", "", 404)
 
-            if found_followed_user['followers'].count(user_id) > 0:
-                found_followed_user['followers'].remove(user_id)
-                found_following_user['following'].remove(followed_user_id)
+            if found_followed_user.followers.count(user_id) > 0:
+                found_followed_user.followers.remove(user_id)
+                found_following_user.following.remove(followed_user_id)
             else:
-                found_followed_user['followers'].append(ObjectId(user_id))
-                found_following_user['following'].append(ObjectId(followed_user_id))
+                found_followed_user.followers.append(ObjectId(user_id))
+                found_following_user.following.append(ObjectId(followed_user_id))
 
-            await userRepository.edit_user(followed_user_id, {"followers": found_followed_user['followers']})
-            await userRepository.edit_user(user_id, {"following": found_following_user['following']})
+            await userRepository.edit_user(followed_user_id, {"followers": found_followed_user.followers})
+            await userRepository.edit_user(user_id, {"following": found_following_user.following})
 
             return ResponseDTO("Requisição realizada com sucesso", "", 200)
 
