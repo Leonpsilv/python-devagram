@@ -1,14 +1,17 @@
+from models.UserModel import UserModel
+
+
 class ConverterUtil:
     def user_converter(self, user):
-        return {
-            "id": str(user["_id"]),
-            "name": user['name'],
-            "email": user['email'],
-            "password": user['password'],
-            "photo": user['photo'] if "photo" in user else "",  # if ternário
-            "followers": [str(p) for p in user['followers']] if "followers" in user else "",
-            "following": [str(p) for p in user['following']] if "following" in user else "",
-        }
+        return UserModel(
+            id = str(user["_id"]),
+            name = user['name'],
+            email = user['email'],
+            password = user['password'],
+            photo = user['photo'] if "photo" in user else "",  # if ternário
+            followers = [str(p) for p in user['followers']] if "followers" in user else [],
+            following = [str(p) for p in user['following']] if "following" in user else [],
+        )
 
     def post_converter(self, post):
         return {

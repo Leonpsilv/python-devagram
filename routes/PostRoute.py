@@ -19,14 +19,11 @@ authService = AuthService()
     dependencies=[Depends(token_verify)]
 )
 async def route_create_post(
-        Authorization: str = Header(default=''),
+        authorization: str = Header(default=''),
         post: CreatePostModel = Depends(CreatePostModel)
 ):
     try:
-        token = Authorization.split(' ')[1]
-        payload = authService.decode_token_jwt(token)
-        result_user = await (userService.search_user(payload["user_id"]))
-        logged_user = result_user['data']
+        logged_user = authService.get_logged_user(authorization)
 
         result = await postService.register_post(post, logged_user['id'])
 
@@ -76,13 +73,10 @@ async def list_all_user_posts(user_id: str):
 )
 async def like_unlike_post(
         post_id: str,
-        Authorization: str = Header(default='')
+        authorization: str = Header(default='')
 ):
     try:
-        token = Authorization.split(' ')[1]
-        payload = authService.decode_token_jwt(token)
-        result_user = await (userService.search_user(payload["user_id"]))
-        logged_user = result_user['data']
+        logged_user = authService.get_logged_user(authorization)
 
         result = await postService.like_or_unlike_post(post_id, logged_user['id'])
 
@@ -100,14 +94,11 @@ async def like_unlike_post(
 )
 async def comment_a_post(
         post_id: str,
-        Authorization: str = Header(default=''),
+        authorization: str = Header(default=''),
         comment_model: CreateCommentModel = Body(...)
 ):
     try:
-        token = Authorization.split(' ')[1]
-        payload = authService.decode_token_jwt(token)
-        result_user = await (userService.search_user(payload["user_id"]))
-        logged_user = result_user['data']
+        logged_user = authService.get_logged_user(authorization)
 
         result = await postService.comment_post(post_id, logged_user['id'], comment_model.comment)
 
@@ -126,13 +117,10 @@ async def comment_a_post(
 async def delete_post_comment(
         post_id: str,
         comment_id: str,
-        Authorization: str = Header(default=''),
+        authorization: str = Header(default=''),
 ):
     try:
-        token = Authorization.split(' ')[1]
-        payload = authService.decode_token_jwt(token)
-        result_user = await (userService.search_user(payload["user_id"]))
-        logged_user = result_user['data']
+        logged_user = authService.get_logged_user(authorization)
 
         result = await postService.delete_comment_post(post_id, logged_user['id'], comment_id)
 
@@ -151,14 +139,11 @@ async def delete_post_comment(
 async def edit_post_comment(
         post_id: str,
         comment_id: str,
-        Authorization: str = Header(default=''),
+        authorization: str = Header(default=''),
         edited_comment: EditCommentModel = Body(...)
 ):
     try:
-        token = Authorization.split(' ')[1]
-        payload = authService.decode_token_jwt(token)
-        result_user = await (userService.search_user(payload["user_id"]))
-        logged_user = result_user['data']
+        logged_user = authService.get_logged_user(authorization)
 
         result = await postService.edit_comment_post(post_id, logged_user['id'], comment_id, edited_comment.comment)
 
@@ -176,13 +161,10 @@ async def edit_post_comment(
 )
 async def delete_a_post(
         post_id: str,
-        Authorization: str = Header(default='')
+        authorization: str = Header(default='')
 ):
     try:
-        token = Authorization.split(' ')[1]
-        payload = authService.decode_token_jwt(token)
-        result_user = await (userService.search_user(payload["user_id"]))
-        logged_user = result_user['data']
+        logged_user = authService.get_logged_user(authorization)
 
         result = await postService.delete_post(post_id, logged_user['id'])
 

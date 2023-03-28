@@ -5,13 +5,24 @@ import time
 from dtos.ResponseDTO import ResponseDTO
 from models.UserModel import UserLoginModel
 from repositories.UserRepository import UserRepository
-from utils.AuthUtil import verify_password
+from utils.AuthUtil import AuthUtil
+from services.UserService import UserService
 
 JWT_SECRET = config('JWT_SECRET')
 userRepository = UserRepository()
+authUtil = AuthUtil()
+userService = UserService()
 
 
 class AuthService:
+    async def get_logged_user(self, authorization: str):
+        token = authorization.split(' ')[1]
+        payload = self.decode_token_jwt(token)
+        result_user = await (userService.search_user(payload["user_id"]))
+        logged_user = result_user.data
+
+        return logged_user
+
     def token_jwt_generate(self, user_id: str) -> str:
         payload = {
             "user_id": user_id,
@@ -37,7 +48,7 @@ class AuthService:
             return ResponseDTO('Email ou senha incorretos.', "", 401)
 
         else:
-            if verify_password(user.password, found_user['password']):
+            if authUtil.verify_password(user.password, found_user['password']):
                 return ResponseDTO('Login realizado com sucesso!', found_user, 200)
 
             else:

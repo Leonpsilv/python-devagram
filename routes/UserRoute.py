@@ -36,9 +36,9 @@ async def route_create_user(file: UploadFile,user: UserCreateModel = Depends(Use
     response_description="Rota para buscar as informações do usuário logado.",
     dependencies=[Depends(token_verify)]
 )
-async def search_for_logged_user_infos(Authorization: str = Header(default='')):
+async def search_for_logged_user_infos(authorization: str = Header(default='')):
     try:
-        token = Authorization.split(' ')[1]
+        token = authorization.split(' ')[1]
         payload = authService.decode_token_jwt(token)
         result = await userService.search_user(payload['user_id'])
 
@@ -94,11 +94,11 @@ async def list_all_users(name: str):
     dependencies=[Depends(token_verify)]
 )
 async def update_logged_user_infos(
-        Authorization: str = Header(default=''),
+        authorization: str = Header(default=''),
         user_update: UserUpdateModel = Depends(UserUpdateModel)
 ):
     try:
-        token = Authorization.split(' ')[1]
+        token = authorization.split(' ')[1]
         payload = authService.decode_token_jwt(token)
         result = await userService.update_logged_user(payload['user_id'], user_update)
 
@@ -117,10 +117,10 @@ async def update_logged_user_infos(
 )
 async def follow_unfollow_user(
         followed_user_id: str,
-        Authorization: str = Header(default='')
+        authorization: str = Header(default='')
 ):
     try:
-        token = Authorization.split(' ')[1]
+        token = authorization.split(' ')[1]
         payload = authService.decode_token_jwt(token)
         result_user = await (userService.search_user(payload["user_id"]))
         logged_user = result_user['data']

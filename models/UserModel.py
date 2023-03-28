@@ -1,3 +1,5 @@
+from typing import List
+
 from fastapi import Form, UploadFile
 from pydantic import BaseModel, Field, EmailStr
 from utils.DecoratorUtil import DecoratorUtil
@@ -10,14 +12,18 @@ class UserModel(BaseModel):
     email: EmailStr = Field(...)
     password: str = Field(...)
     photo: str = Field(...)
+    followers: List
+    following: List
 
     class Config:
         schema_extra={
             "user": {
-                "name": "Jose",
-                "email": "jose@email.com",
-                "password": "senha123!",
-                "photo": "jose.png"
+                "name": "string",
+                "email": "string",
+                "password": "string",
+                "photo": "string",
+                "followers": "List",
+                "following": "List"
             }
         }
 
